@@ -6,18 +6,8 @@ import org.apache.logging.log4j.Logger;
 public class Main {
 private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static void main(String[] args) throws Exception {
-//        List<Horse> horses = List.of(
-//                new Horse("Bucephalus", 2.4),
-//                new Horse("Ace of Spades", 2.5),
-//                new Horse("Zephyr", 2.6),
-//                new Horse("Blaze", 2.7),
-//                new Horse("Lobster", 2.8),
-//                new Horse("Pegasus", 2.9),
-//                new Horse("Cherry", 3)
-//        );
-
         List<Horse> horses = List.of(
-                new Horse("", 2.4),
+                new Horse("Bucephalus", 2.4),
                 new Horse("Ace of Spades", 2.5),
                 new Horse("Zephyr", 2.6),
                 new Horse("Blaze", 2.7),
@@ -25,11 +15,9 @@ private static final Logger LOGGER = LogManager.getLogger(Main.class);
                 new Horse("Pegasus", 2.9),
                 new Horse("Cherry", 3)
         );
-
         Hippodrome hippodrome = new Hippodrome(horses);
 
-        //Hippodrome hippodrome = new Hippodrome(null);
-        LOGGER.info("Початок стрибків. Кількість учасників: " + horses.size());
+        LOGGER.info("Початок стрибків. Кількість учасників: {}",horses.size());
 
         for (int i = 0; i < 100; i++) {
             hippodrome.move();

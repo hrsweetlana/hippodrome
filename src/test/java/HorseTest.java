@@ -2,97 +2,161 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 class HorseTest {
 
-    Horse horse = new Horse("Specter", 5, 10);
-
     @Test
-    void horseConstructorThrowExceptionIfNameNull() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Horse(null, 5, 10);
+    void constructorNullNameParamPassedThrowsIllegalArgumentException() {
+        String expectedMessage = "Name cannot be null.";
+        String name = null;
+        double speed = 2.4;
+        double distance = 150;
+
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> {
+            new Horse(name, speed, distance);
         });
 
-        assertEquals("Name cannot be null.", exception.getMessage());
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @ParameterizedTest
     @DisplayName("Throws when first parameter instead of name contains only whitespace characters")
-    @ValueSource(strings = {" ", "", "\t", "\n", "\r",})
-    void horseConstructorThrowExceptionIfNameEmpty(String invalidName) {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Horse(invalidName, 5, 10);
+    @ValueSource(strings = {" ", "  ", "\t", "\t\t", "\n", "\n\n", "\r", "\t \t"})
+    void constructorEmptyNameParamPassedThrowsIllegalArgumentException(String name) {
+        String expectedMessage = "Name cannot be blank.";
+        double speed = 2.4;
+        double distance = 150;
+
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> {
+            new Horse(name, speed, distance);
         });
 
-        assertEquals("Name cannot be blank.", exception.getMessage());
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
-    void horseConstructorThrowExceptionIfNegativeSpeed() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Horse("Specter", -5, 10);
+    void constructorNegativeSpeedParamPassedThrowsIllegalArgumentException() {
+        String expectedMessage = "Speed cannot be negative.";
+        String name = "TestName";
+        double speed = -2.4;
+        double distance = 150;
+
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> {
+            new Horse(name, speed, distance);
         });
 
-        assertEquals("Speed cannot be negative.", exception.getMessage());
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     @Test
-    void horseConstructorThrowExceptionIfNegativeDistance() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Horse("Specter", 5, -1);
+    void constructorNegativeDistanceParamPassedThrowsIllegalArgumentException() {
+        String expectedException = "Distance cannot be negative.";
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = -150;
+
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> {
+            new Horse(name, speed, distance);
         });
 
-        assertEquals("Distance cannot be negative.", exception.getMessage());
+        assertEquals(expectedException, exception.getMessage());
     }
 
     @Test
-    void getNameReturnsFirstParam() {
-        assertEquals("Specter", horse.getName());
+    void getNameReturnsCorrectName() {
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = 150;
+        Horse horse = new Horse(name, speed, distance);
+
+        String actualName = horse.getName();
+
+        assertEquals(name, actualName);
     }
 
     @Test
-    void getSpeedReturnsSecondParam() {
-        assertEquals(5, horse.getSpeed(), "Speed must be second param");
+    void getSpeedReturnsCorrectSpeed() {
+
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = 150;
+        Horse horse = new Horse(name, speed, distance);
+
+        double actualSpeed = horse.getSpeed();
+
+        assertEquals(speed, actualSpeed);
     }
 
     @Test
-    void getDistanceReturnsThirdParam() {
-        assertEquals(10, horse.getDistance(), "Distance must be third param");
+    void getDistanceReturnsCorrectDistance() {
+
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = 150;
+        Horse horse = new Horse(name, speed, distance);
+
+        double actualDistance = horse.getDistance();
+
+        assertEquals(distance, actualDistance);
     }
 
     @Test
-    void getDistanceDefaultZeroForTwoArgsConstructor() {
-        Horse horse = new Horse("Specter", 5);
-        assertEquals(0, horse.getDistance(), "Default distance must be zero");
+    void getDistanceInvokeTwoArgsConstructorReturnsZero() {
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = 0;
+        Horse horse = new Horse(name, speed);
+        String infoMessage = "Default distance must be zero";
+
+        double actualDistance = horse.getDistance();
+
+        assertEquals(distance, actualDistance, infoMessage);
     }
 
+
+    @Test
+    void moveCallsGetRandomDoubleMethodWithCorrectParams() {
+
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = 150;
+        Horse horse = new Horse(name, speed, distance);
+        double min = 0.2;
+        double max = 0.9;
+
+        try (MockedStatic<Horse> horseMockedStatic = mockStatic(Horse.class)) {
+
+            horse.move();
+            horseMockedStatic.verify(() -> Horse.getRandomDouble(min, max));
+
+        }
+    }
 
     @ParameterizedTest
-    @CsvSource({
-            "0.2, 0.9, 0.3, 10, 3.0",
-            "0.2, 0.9, 0.5, 8, 4.0",
-            "0.2, 0.9, 0.7, 6, 4.2"
-    })
-    void testMoveMethod(double min, double max, double randomValue, double speed, double expectedDistance) {
-        try (MockedStatic<Horse> mockStatic = Mockito.mockStatic(Horse.class)) {
-            mockStatic.when(() -> Horse.getRandomDouble(min, max)).thenReturn(randomValue);
-            Horse horse = new Horse("Specter", speed);
+    @ValueSource(doubles = {0.2, 0.3, 0.5, 0.8, 15, 0, 153})
+    public void moveUsedFormulaForDistanceIsCorrect(double fakeRandomValue) {
+        double min = 0.2;
+        double max = 0.9;
+        String name = "TestName";
+        double speed = 2.4;
+        double distance = 150;
+        Horse horse = new Horse(name, speed, distance);
+
+        double expectedDistance = distance + speed * fakeRandomValue;
+
+        try (MockedStatic<Horse> horseMockedStatic = mockStatic(Horse.class)) {
+            horseMockedStatic.when(() -> Horse.getRandomDouble(min, max)).thenReturn(fakeRandomValue);
             horse.move();
-            mockStatic.verify(() -> Horse.getRandomDouble(min, max));
-            double actualDistance = horse.getDistance();
-            System.out.println(actualDistance);
-            //assertEquals(expectedDistance, horse.getDistance());
-            assertEquals(expectedDistance, actualDistance);
         }
+        double actualDistance = horse.getDistance();
+
+        assertEquals(expectedDistance, actualDistance);
     }
 }
